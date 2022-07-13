@@ -11,6 +11,7 @@ To run a project, you simply do `cargo run --example <filename>`. This will run 
 Here's a list of all the projects I've set myself to do for fun, I'll update the list as I complete more!
 - [x] Firework simulation 
 - [x] Fibonacci Fractal
+- [ ] Boids (Birds) simulation
 - [ ] Sierpinski Triangle
 - [ ] 4th Dimensional shapes?
 - [ ] Metaballs (Marching Squares)
