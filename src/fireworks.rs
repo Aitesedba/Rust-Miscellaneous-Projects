@@ -1,6 +1,5 @@
 mod geometry;
 
-
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
@@ -8,36 +7,37 @@ use rand::Rng;
 pub struct Firework {
     position: Vec2,
     velocity: Vec2,
-    to_explode: bool,
+    explosions_left: i32,
     color: Color,
 }
-
 #[derive(Component, Debug)]
 struct EffectFade {
     alpha: f32,
     fade_spd: f32,
     size: f32,
 }
-
 pub struct ExplosionLocation {
     pub location: Vec2,
     color: Color,
+    explosions_left: i32,
 }
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
         .add_event::<ExplosionLocation>()
         .insert_resource(WindowDescriptor {
-            title: "Fireworks".to_string(),
+            title: "Fireworks!".to_string(),
+            width: 1000.,
+            height: 600.,
             ..default()
         })
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
+        .insert_resource(ClearColor(Color::DARK_GRAY))
         .add_system(generate)
-        .add_system(locations)
+        .add_system(update_locations)
         .add_system(fade_trail)
         .add_system(fade_sides)
         .add_system(side_effects)
+        .add_plugins(DefaultPlugins)
         .run();
 }
 
@@ -90,7 +90,7 @@ fn generate(
                         rng.gen_range(-explode_spd..=explode_spd),
                         rng.gen_range(-1.0..=explode_spd),
                     ),
-                    to_explode: false,
+                    explosions_left: event.explosions_left - 1,
                     color: new_color,
                 })
                 .insert(EffectFade {
@@ -101,30 +101,33 @@ fn generate(
         }
     }
 
-    if buttons.just_released(MouseButton::Left) {
-        if let Some(_position) = window.cursor_position() {
-            // cursor is inside the window, position given
-
-            let cursor = window.cursor_position().unwrap();
-            let origin = Vec2::new(
-                cursor[0] - windows.primary().width() / 2.0,
-                cursor[1] - windows.primary().height() / 2.0,
-            );
-
-            //println!("Clicked! {:?}", origin);
-
-            commands.spawn().insert(Firework {
-                position: origin,
-                velocity: Vec2::new(
-                    rng.gen_range(-side_spd..=side_spd),
-                    launch_strength + rng.gen_range(-launch_str_difference..=launch_str_difference),
-                ),
-                to_explode: true,
-                color: Color::hsla(rng.gen_range(0.0..=360.0), 2.0, 2.0, 1.0),
-            });
-
-            //launch(window.cursor_position().unwrap());
+    if buttons.just_released(MouseButton::Left) || buttons.just_released(MouseButton::Right) {
+        let explosion_potential: i32;
+        if buttons.just_released(MouseButton::Left) {
+            //If Left Click
+            explosion_potential = 1;
+        } else {
+            //If Right Click
+            explosion_potential = 2;
         }
+
+        let cursor = window.cursor_position().unwrap();
+        let origin = Vec2::new(
+            cursor[0] - windows.primary().width() / 2.0,
+            cursor[1] - windows.primary().height() / 2.0,
+        );
+
+        //println!("Clicked! {:?}", origin);
+
+        commands.spawn().insert(Firework {
+            position: origin,
+            velocity: Vec2::new(
+                rng.gen_range(-side_spd..=side_spd),
+                launch_strength + rng.gen_range(-launch_str_difference..=launch_str_difference),
+            ),
+            explosions_left: explosion_potential,
+            color: Color::hsla(rng.gen_range(0.0..=360.0), 2.0, 2.0, 1.0),
+        });
     }
 }
 
@@ -173,7 +176,7 @@ fn side_effects(
     }
 }
 
-fn locations(
+fn update_locations(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -187,15 +190,16 @@ fn locations(
 
     //println!("Fireworks total: {}", query.iter().len());
 
-    for (ent, mut particle) in query.iter_mut() { //Cycles through every particle
+    for (ent, mut particle) in query.iter_mut() {
+        //Cycles through every particle
 
         let velocity = particle.velocity;
         particle.position += velocity;
 
         particle.velocity[1] -= grav;
 
-        
-        commands.spawn_bundle(MaterialMesh2dBundle { // Summon Circles
+        commands.spawn_bundle(MaterialMesh2dBundle {
+            // Summon Circles
             mesh: meshes.add(geometry::Circle::new(5.0).into()).into(),
             material: materials.add(ColorMaterial::from(particle.color)),
             transform: Transform::from_translation(Vec3::new(
@@ -205,16 +209,17 @@ fn locations(
             )),
             ..default()
         });
-        if (particle.velocity[1] < 1.5) & particle.to_explode {
+        if (particle.velocity[1] < 1.5) & (particle.explosions_left > 0) {
             //Explode if it stops going up
             explode.send(ExplosionLocation {
                 location: particle.position,
                 color: particle.color,
+                explosions_left: particle.explosions_left,
             });
             //println!("Explosion! {}", particle.position);
         }
         if (particle.position[1] < -windows.primary().height() / 2.0)
-            | ((particle.velocity[1] < 1.5) & particle.to_explode)
+            | ((particle.velocity[1] < 1.5) & (particle.explosions_left > 0))
         {
             commands.entity(ent).despawn();
         }
@@ -222,17 +227,25 @@ fn locations(
 }
 
 fn fade_trail(
-    mut commands: Commands,
-    query: Query<(Entity, &Handle<ColorMaterial>)>,
+    query: Query<&Handle<ColorMaterial>>,
+    explosion_query: Query<(&Firework, &EffectFade)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut explode: EventWriter<ExplosionLocation>,
 ) {
-
-    for (ent, handle) in query.iter() {
+    for handle in query.iter() {
         let color = &mut materials.get_mut(handle).unwrap().color;
-        color.set_a(color.a() - 0.1);
 
-        if color.a() <= 0.0 {
-            commands.entity(ent).despawn();
+        color.set_a(color.a() - 0.1);
+    }
+
+    for (particle, effects) in explosion_query.iter() {
+        if (effects.alpha <= 0.0) & (particle.explosions_left > 0) {
+            println!("Secondary Explosion!");
+            explode.send(ExplosionLocation {
+                location: particle.position,
+                color: particle.color,
+                explosions_left: particle.explosions_left - 1,
+            });
         }
     }
 }
