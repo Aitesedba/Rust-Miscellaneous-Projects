@@ -26,3 +26,7 @@ path = "src/fireworks.rs"
 [[example]]
 name = "spiral"
 path = "src/spiral-fractal.rs"
+
+[[example]]
+name = "kinematics"
+path = "src/inverse-kinematics"
