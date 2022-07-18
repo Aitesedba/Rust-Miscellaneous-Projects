@@ -3,6 +3,26 @@ mod geometry;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
+fn main() {
+    App::new()
+        .add_event::<ExplosionLocation>()
+        .insert_resource(WindowDescriptor {
+            title: "Fireworks!".to_string(),
+            width: 1000.,
+            height: 600.,
+            ..default()
+        })
+        .insert_resource(ClearColor(Color::DARK_GRAY))
+        .add_startup_system(spawn_camera)
+        .add_system(generate)
+        .add_system(update_locations)
+        .add_system(fade_trail)
+        .add_system(fade_sides)
+        .add_system(side_effects)
+        .add_plugins(DefaultPlugins)
+        .run();
+}
+
 #[derive(Component, Debug)]
 pub struct Firework {
     position: Vec2,
@@ -20,35 +40,6 @@ pub struct ExplosionLocation {
     pub location: Vec2,
     color: Color,
     explosions_left: i32,
-}
-
-fn main() {
-    App::new()
-        .add_event::<ExplosionLocation>()
-        .insert_resource(WindowDescriptor {
-            title: "Fireworks!".to_string(),
-            width: 1000.,
-            height: 600.,
-            ..default()
-        })
-        .insert_resource(ClearColor(Color::DARK_GRAY))
-        .add_system(generate)
-        .add_system(update_locations)
-        .add_system(fade_trail)
-        .add_system(fade_sides)
-        .add_system(side_effects)
-        .add_plugins(DefaultPlugins)
-        .run();
-}
-
-fn fade_sides(mut query: Query<&mut EffectFade>) {
-    for mut handle in query.iter_mut() {
-        //let color = &mut materials.get_mut(handle).unwrap().color;
-        // your color changing logic here instead:
-
-        let fade_spd = handle.fade_spd;
-        handle.alpha -= fade_spd;
-    }
 }
 
 fn generate(
@@ -82,8 +73,7 @@ fn generate(
         }
 
         for _i in 0..=rng.gen_range(explode_min_size..explode_max_size) {
-            commands
-                .spawn()
+            commands.spawn()
                 .insert(Firework {
                     position: origin_b,
                     velocity: Vec2::new(
@@ -131,6 +121,20 @@ fn generate(
     }
 }
 
+fn fade_sides(mut query: Query<&mut EffectFade>) {
+    for mut handle in query.iter_mut() {
+        //let color = &mut materials.get_mut(handle).unwrap().color;
+        // your color changing logic here instead:
+
+        let fade_spd = handle.fade_spd;
+        handle.alpha -= fade_spd;
+    }
+}
+
+fn spawn_camera(mut commands: Commands){
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+}
+
 fn side_effects(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -138,9 +142,15 @@ fn side_effects(
 
     windows: Res<Windows>,
     mut query: Query<(Entity, &mut Firework, &mut EffectFade)>,
+
+    que2: Query<&mut Transform>,
 ) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    
     let grav = 0.2;
+    
+    println!("Number: {}", que2.iter().count());
+    // println!("Frame.");
+
 
     //println!("Fireworks total: {}", query.iter().len());
 
@@ -170,7 +180,8 @@ fn side_effects(
             ..default()
         });
 
-        if (particle.position[1] < -windows.primary().height() / 2.0) | (effects.alpha < 0.0) {
+        if (particle.position[1] < -windows.primary().height() / 2.0)| (effects.alpha < 0.0) {
+            println!("Despawned!");
             commands.entity(ent).despawn();
         }
     }
@@ -185,7 +196,6 @@ fn update_locations(
     mut query: Query<(Entity, &mut Firework), Without<EffectFade>>,
     mut explode: EventWriter<ExplosionLocation>,
 ) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     let grav = 0.3;
 
     //println!("Fireworks total: {}", query.iter().len());
@@ -227,14 +237,17 @@ fn update_locations(
 }
 
 fn fade_trail(
-    query: Query<&Handle<ColorMaterial>>,
+    mut commands: Commands,
+    query: Query<(Entity, &Handle<ColorMaterial>)>,
     explosion_query: Query<(&Firework, &EffectFade)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut explode: EventWriter<ExplosionLocation>,
 ) {
-    for handle in query.iter() {
+    for (ent, handle) in query.iter() {
         let color = &mut materials.get_mut(handle).unwrap().color;
-
+        if color.a() <= 0.0 {
+            commands.entity(ent).despawn();
+        }
         color.set_a(color.a() - 0.1);
     }
 
@@ -246,6 +259,7 @@ fn fade_trail(
                 color: particle.color,
                 explosions_left: particle.explosions_left - 1,
             });
+            
         }
     }
 }
