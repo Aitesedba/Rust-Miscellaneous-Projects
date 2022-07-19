@@ -1,10 +1,10 @@
-# Rust Projects
-This is my repository where I just put all the small rust projects I make! The collection will probably be small at first but I hope to be able to grow it out a bit.
+# Rust Challenges
+This is my repository where I just put all the small rust programs I make! The collection will probably be small at first but I hope to be able to grow it out a bit, it mostly consists of cool visual interactives and other graphical projects!
 
 ## How to execute the projects?
 To run a project, you simply do `cargo run --example <filename>`. This will run just the singular file for that one project.  Make sure you have rust analyzer and/or rust cargo manager to be able to run the files.
 
-# 3 Projects Completed so far
+# 3 Challenges Completed so far
 ![image](https://user-images.githubusercontent.com/57340908/179426908-9e55237d-b682-4ce4-a4fe-e6468dd926b9.png)
 
 
