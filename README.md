@@ -4,7 +4,7 @@ This is my repository where I just put all the small rust programs I make! The c
 ## How to execute the projects?
 To run a project, you simply do `cargo run --example <filename>`. This will run just the singular file for that one project.  Make sure you have rust analyzer and/or rust cargo manager to be able to run the files.
 
-# 3 Challenges Completed so far
+# 3 Completed so far
 ![image](https://user-images.githubusercontent.com/57340908/179426908-9e55237d-b682-4ce4-a4fe-e6468dd926b9.png)
 
 
@@ -12,6 +12,7 @@ Here's a list of all the projects I've set myself to do for fun, I'll update the
 - [x] `fireworks` Firework simulation 
 - [x] `spiral`    Fibonacci Fractal
 - [x] `kinematics` Inverse Kinematics - String/Arm Model
+- [ ] Triangulation 
 - [ ] Boids (Birds) simulation
 - [ ] Sierpinski Triangle
 - [ ] 4th (And more) Dimensional shapes?
