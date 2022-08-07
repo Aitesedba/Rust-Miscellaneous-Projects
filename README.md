@@ -25,5 +25,6 @@ Here's a list of all the projects I've set myself to do for fun, I'll update the
 - [ ] Shifting Colored Triangle Gradient 
 - [ ] Fluid Simulations
 - [ ] 3 Hexagonal Player Chess
+- [ ] Conway's game of life
 - [ ] I need to learn how to use compute shaders 
 - [ ] Other Fractal Simulations?
