@@ -11,10 +11,10 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = { version = "0.7", features = ["dynamic"] }
-wgpu = "0.12.0"
+bevy = { version = "0.8", features = ["dynamic"] }
 rand = "0.8.4"
-bevy_polyline = "0.2"
+bevy_polyline = "0.3"
+
 
 
 [[example]]
