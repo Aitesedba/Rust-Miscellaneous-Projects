@@ -1,4 +1,5 @@
-mod geometry;
+
+
 use bevy::{input::mouse::MouseWheel, prelude::*, sprite::MaterialMesh2dBundle};
 
 fn main() {
@@ -15,15 +16,16 @@ fn spiral_draw(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // Relevant modifiers to edit spiral properties
+    // Relevant modifiers to edit spiral properties you reader may edit
     let shape_density = 20;
     let size_mod = 0.150;
     let total_spirals: u8 = 1;
 
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
     for spiral_num in 0..total_spirals {
-        let mut prev_term = 0.0;
-        let mut next_last_term = 1.0;
+
+        let mut prev_term: f32 = 0.0;
+        let mut next_last_term: f32 = 1.0;
         let mut direction: usize = 0;
         let mut offset: Vec3 = Vec3::new(0.0, 0.0, 0.0);
         let directions = [
@@ -32,9 +34,9 @@ fn spiral_draw(
             Vec3::new(-1.0, 0.0, 0.0),
             Vec3::new(0.0, -1.0, 0.0),
         ];
-        
-        for u in 0..=100 {
-            // Each segment is one quarter spiral
+        println!("{}", spiral_num as f32 / total_spirals as f32 * 360.0);
+        for u in 0..=70 {
+            // Each iteration of u is another full rotation
             let quarter = u as f32;
 
             // Calculate Fibbonacci sequence
@@ -52,19 +54,13 @@ fn spiral_draw(
                 // The precise angle of individual shape, plus which quarter it is in.
                 let f =
                     ((((i as f32) / shape_density as f32) * 90.0) + (quarter * -90.0)).to_radians();
+
+
                 commands.spawn_bundle(MaterialMesh2dBundle {
                     mesh: meshes
-                        .add(
-                            geometry::RegularPolygon::new(
-                                (prev_term
-                                    + (next_last_term * (1.0 - (i as f32 / shape_density as f32))))
-                                    * size_mod
-                                    / 10.,
-                                5,
-                            )
-                            .into(),
-                        )
-                        .into(),
+                        .add(shape::RegularPolygon::new(
+                    (prev_term + (next_last_term * (1.0 - (i as f32/ shape_density as f32)
+                            ))) * size_mod/ 10.,5,).into(),).into(),
                     material: materials.add(ColorMaterial::from(Color::hsla(
                         i as f32 / shape_density as f32 * 360.0,
                         2.0,
@@ -100,6 +96,7 @@ fn mouse_scroll(
     mut query: Query<&mut OrthographicProjection, With<Camera>>,
     mut speed: Local<f32>,
 ) {
+    // CHange move speed when scrolling
     for event in mouse_wheel_events.iter() {
         *speed -= event.y * 0.03;
     }
