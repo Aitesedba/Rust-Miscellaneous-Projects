@@ -1,5 +1,3 @@
-mod geometry;
-
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
@@ -8,7 +6,7 @@ fn main() {
         .add_event::<ExplosionLocation>()
         .insert_resource(WindowDescriptor {
             title: "Fireworks!".to_string(),
-            width: 1000.,
+            width: 800.,
             height: 600.,
             ..default()
         })
@@ -132,7 +130,7 @@ fn fade_sides(mut query: Query<&mut EffectFade>) {
 }
 
 fn spawn_camera(mut commands: Commands){
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 }
 
 fn side_effects(
@@ -169,7 +167,7 @@ fn side_effects(
         // Circle
         commands.spawn_bundle(MaterialMesh2dBundle {
             mesh: meshes
-                .add(geometry::Circle::new(effects.size).into())
+                .add(shape::Circle::new(effects.size).into())
                 .into(),
             material: materials.add(ColorMaterial::from(particle.color)),
             transform: Transform::from_translation(Vec3::new(
@@ -210,7 +208,7 @@ fn update_locations(
 
         commands.spawn_bundle(MaterialMesh2dBundle {
             // Summon Circles
-            mesh: meshes.add(geometry::Circle::new(5.0).into()).into(),
+            mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
             material: materials.add(ColorMaterial::from(particle.color)),
             transform: Transform::from_translation(Vec3::new(
                 particle.position[0] / 1.0,
