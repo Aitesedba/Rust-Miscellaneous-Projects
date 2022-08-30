@@ -13,6 +13,8 @@ Here's a list of all the projects I've set myself to do for fun, I'll update the
 - [x] `spiral`    Fibonacci Fractal
 - [x] `kinematics` Inverse Kinematics - String/Arm Model
 - [ ] Triangulation 
+- [ ] 3d Tetris
+- [ ] Sine wave model
 - [ ] Boids (Birds) simulation
 - [ ] Sierpinski Triangle
 - [ ] 4th (And more) Dimensional shapes?
