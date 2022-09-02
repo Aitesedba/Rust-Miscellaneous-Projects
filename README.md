@@ -12,7 +12,7 @@ Here's a list of all the projects I've set myself to do for fun, I'll update the
 - [x] `fireworks` Firework Simulation 
 - [x] `spiral`    Fibonacci Fractal
 - [x] `kinematics` Inverse Kinematics - String/Arm Model
-- [x] `Trilateration`  Trilateration Simulation
+- [x] `trilateration`  Trilateration Simulation
 - [ ] 3d Tetris
 - [ ] Sine wave model
 - [ ] Boids (Birds) simulation
