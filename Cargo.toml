@@ -20,11 +20,12 @@ bevy_polyline = "0.3"
 [[example]]
 name = "fireworks"
 path = "src/fireworks.rs"
-
 [[example]]
 name = "spiral"
 path = "src/spiral-fractal.rs"
-
 [[example]]
 name = "kinematics"
 path = "src/inverse-kinematics.rs"
+[[example]]
+name = "trilateration"
+path = "src/trilateration.rs"
