@@ -5,7 +5,8 @@ This is my repository where I just put all the small rust programs I make! The c
 To run a project, you simply do `cargo run --example <filename>`. This will run just the singular file for that one project.  Make sure you have rust analyzer and/or rust cargo manager to be able to run the files.
 
 # 4 Completed 
-![image](https://user-images.githubusercontent.com/57340908/179426908-9e55237d-b682-4ce4-a4fe-e6468dd926b9.png)
+![image](https://user-images.githubusercontent.com/57340908/188246565-0ef50b7f-5d09-4a65-b66f-729b2f8ab8f6.png)
+
 
 
 Here's a list of all the projects I've set myself to do for fun, I'll update the list as I complete more!
