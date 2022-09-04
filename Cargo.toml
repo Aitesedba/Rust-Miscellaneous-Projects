@@ -13,6 +13,7 @@ opt-level = 3
 [dependencies]
 bevy = { version = "0.8", features = ["dynamic"] }
 rand = "0.8.4"
+bevy_prototype_lyon = "0.6.0"
 bevy_polyline = "0.3"
 
 
