@@ -4,13 +4,13 @@ use rand::Rng;
 
 fn main() {
     App::new()
-        
         .insert_resource(WindowDescriptor {
             title: "Trilateration".to_string(),
             width: 800.,
             height: 550.,
             ..default()
         })
+        .insert_resource(ClearColor(Color::BISQUE))
         .add_plugins(DefaultPlugins)
         .add_startup_system(spawn_camera)
         .add_system(detect_input)
@@ -22,9 +22,10 @@ fn trilaterate(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let mut rng = rand::thread_rng();
 
+    mut marker_pos: Vec2,
+    points: [Vec2; 3],
+) {
     // Fixed Markers
     // let points: [Vec2; 3] = [
     //     Vec2::new(-100.0, 100.0),
@@ -32,15 +33,7 @@ fn trilaterate(
     //     Vec2::new(0.0, -100.0),
     // ];
 
-    // Randomized markers
-    let points: [Vec2; 3] = [
-        Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
-        Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
-        Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
-    ];
-
-    let marker_pos = Vec2::new(rng.gen_range(-100.0..100.0), rng.gen_range(0.0..100.0));
-    // let marker_pos = Vec2::new(0.0, 0.0);
+    // let mut marker_pos = Vec2::new(rng.gen_range(-100.0..100.0), rng.gen_range(0.0..100.0));
 
     let distances: [f32; 3] = [
         points[0].distance(marker_pos),
@@ -48,7 +41,7 @@ fn trilaterate(
         points[2].distance(marker_pos),
     ];
 
-    drop(marker_pos);
+    marker_pos = Vec2::new(0.0, 0.0); //Clear position data
 
     for i in 0..points.len() {
         // Draw Radius Outline
@@ -61,13 +54,13 @@ fn trilaterate(
             &shape,
             DrawMode::Outlined {
                 fill_mode: FillMode::color(Color::rgba(0.0, 0.0, 0.0, 0.0)),
-                outline_mode: StrokeMode::new(Color::rgba(0.0, 0.0, 0.0, 0.5), 3.0),
+                outline_mode: StrokeMode::new(Color::rgba(0.0, 0.0, 0.0, 0.7), 3.0),
             },
             Transform::from_translation(points[i].extend(0.0)),
         ));
 
         commands.spawn_bundle(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
+            mesh: meshes.add(shape::Circle::new(6.0).into()).into(),
             material: materials.add(ColorMaterial::from(Color::RED)),
             transform: Transform::from_translation(points[i].extend(1.0)),
             ..default()
@@ -83,7 +76,7 @@ fn trilaterate(
             u = i + 1
         }
 
-        // God save me from this monsterous formula hell
+        // Welcome to formula hell
         let rd1: f32 = distances[i].abs();
         let rd2: f32 = distances[u].abs();
 
@@ -116,17 +109,14 @@ fn trilaterate(
 
     // println!("Intersections: {:?}", intersects);
 
-    
-    for i in 0..intersects.len(){
+    for i in 0..intersects.len() {
         intersects[i] = intersects[i].round();
     }
     let mut unrendered_set = intersects.clone();
     for i in intersects.iter() {
-
-
         //Summon Marker
         commands.spawn_bundle(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
+            mesh: meshes.add(shape::Circle::new(4.0).into()).into(),
             material: materials.add(ColorMaterial::from(Color::BLUE)),
             transform: Transform::from_translation(i.extend(1.0)),
             ..default()
@@ -135,7 +125,6 @@ fn trilaterate(
         unrendered_set.remove(0);
         println!("Set: {:?} Current: {}", unrendered_set, i);
         if unrendered_set.contains(i) {
-
             println!("{}", i);
             commands.spawn_bundle(MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
@@ -147,22 +136,64 @@ fn trilaterate(
     }
 }
 
-
 fn detect_input(
     mut commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
 
     keyboard_input: Res<Input<KeyCode>>,
+    buttons: Res<Input<MouseButton>>,
     query: Query<(Entity, &Transform, Without<Camera2d>)>,
+    windows: Res<Windows>,
 ) {
-    if keyboard_input.just_released(KeyCode::Space) {
+    // println!("{}", query.iter().len());
+
+    let window = windows.get_primary().unwrap();
+
+    if keyboard_input.just_pressed(KeyCode::Space) {
         for (ent, _transform, _que) in query.iter() {
             commands.entity(ent).despawn();
         }
 
+        let mut rng = rand::thread_rng();
+
+        // Window Width and Height, can generate within 0.7 of the screen
+        let wid = (windows.primary().width() / 2.0) * 0.7;
+        let hei = (windows.primary().height() / 2.0) * 0.7;
+
         // Calls the Bevy system as event
-        trilaterate(commands, meshes, materials);
+        trilaterate(
+            commands,
+            meshes,
+            materials,
+            Vec2::new(rng.gen_range(-100.0..100.0), rng.gen_range(0.0..100.0)),
+            [
+                Vec2::new(rng.gen_range(-wid..wid), rng.gen_range(-hei..hei)),
+                Vec2::new(rng.gen_range(-wid..wid), rng.gen_range(-hei..hei)),
+                Vec2::new(rng.gen_range(-wid..wid), rng.gen_range(-hei..hei)),
+            ],
+        );
+    } else if buttons.pressed(MouseButton::Left) {
+        let mut positions = Vec::new();
+        for (ent, transform, _que) in query.iter() {
+            positions.push(transform.translation.truncate());
+            commands.entity(ent).despawn();
+        }
+
+        let cursor = window.cursor_position().unwrap();
+        let origin = Vec2::new(
+            cursor[0] - windows.primary().width() / 2.0,
+            cursor[1] - windows.primary().height() / 2.0,
+        );
+
+        // Calls the Bevy system as event
+        trilaterate(
+            commands,
+            meshes,
+            materials,
+            origin,
+            [positions[0], positions[1], positions[2]],
+        );
     }
 }
 
@@ -173,5 +204,17 @@ fn spawn_camera(
 ) {
     commands.spawn_bundle(Camera2dBundle::default());
 
-    trilaterate(commands, meshes, materials);
+    let mut rng = rand::thread_rng();
+
+    trilaterate(
+        commands,
+        meshes,
+        materials,
+        Vec2::new(rng.gen_range(-100.0..100.0), rng.gen_range(0.0..100.0)),
+        [
+            Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
+            Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
+            Vec2::new(rng.gen_range(-150.0..100.0), rng.gen_range(-150.0..100.0)),
+        ],
+    );
 }
