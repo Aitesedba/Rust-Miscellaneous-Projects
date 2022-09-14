@@ -1,4 +1,3 @@
-
 use bevy::prelude::*;
 use bevy_polyline::prelude::*;
 
@@ -24,6 +23,7 @@ fn main() {
 struct KinematicSettings {
     sections: usize,
     total_length: f32,
+    fixed: bool,
 }
 
 fn setup(
@@ -34,7 +34,9 @@ fn setup(
     mut settings: ResMut<KinematicSettings>,
 ) {
     settings.sections = 500;
-    settings.total_length = 1.3;
+    settings.total_length = 1.2;
+    settings.fixed = true;
+
 
     commands.spawn_bundle(PolylineBundle {
         polyline: polylines.add(Polyline {
@@ -102,7 +104,7 @@ fn move_line(
             }
 
             // If it doesn't line up to (0, 0) exactly, just shift everything over so it does
-            if verts[verts.len() - 1] != Vec3::ZERO {
+            if (verts[verts.len() - 1] != Vec3::ZERO) && settings.fixed {
                 let difference = verts[verts.len() - 1];
                 for i in 0..verts.len() {
                     verts[i] -= difference;
