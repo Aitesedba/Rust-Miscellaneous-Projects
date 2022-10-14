@@ -1,3 +1,12 @@
+// Fixed Point Inverse Kinematics
+
+// I made a quick and simple Inverse-Kinematics demo, it does this in the form that resembles a string,
+//  there could be other methods to implement this. You can edit kinematics settings at line 32-34, you
+//  can change the segment amount, length, or choose if the arm is locked to fixed point in center
+
+// To run it:
+// cargo run --example kinematics
+
 use bevy::prelude::*;
 use bevy_polyline::prelude::*;
 
@@ -19,13 +28,6 @@ fn main() {
         .run();
 }
 
-#[derive(Default)]
-struct KinematicSettings {
-    sections: usize,
-    total_length: f32,
-    fixed: bool,
-}
-
 fn setup(
     mut commands: Commands,
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
@@ -35,8 +37,7 @@ fn setup(
 ) {
     settings.sections = 500;
     settings.total_length = 1.2;
-    settings.fixed = true;
-
+    settings.fixed = false;
 
     commands.spawn_bundle(PolylineBundle {
         polyline: polylines.add(Polyline {
@@ -53,7 +54,6 @@ fn setup(
     });
 
     // camera
-
 
     commands.spawn_bundle(Camera3dBundle {
         projection: bevy::render::camera::Projection::Orthographic(OrthographicProjection {
@@ -115,4 +115,11 @@ fn move_line(
             polylines.get_mut(polyline).unwrap().vertices = verts;
         }
     }
+}
+
+#[derive(Default)]
+struct KinematicSettings {
+    sections: usize,
+    total_length: f32,
+    fixed: bool,
 }
