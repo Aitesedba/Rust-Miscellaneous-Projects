@@ -1,4 +1,3 @@
-
 // Fixed Point Inverse Kinematics
 
 // It's a simple and easy demonstration of Trilateration, the process that sattelites use to track your
