@@ -1,3 +1,16 @@
+
+// Fixed Point Inverse Kinematics
+
+// It's a simple and easy demonstration of Trilateration, the process that sattelites use to track your
+// location. Works because we know exactly how long it takes the siganl to travel and thus the distance,
+// and the target will lie anywhere on the circumference of the circle, we can figure out the location
+// of the target by looking at where the circles intersect. Sattelites use this, with 4 points because
+// they work in a 3 dimensional space rather than 2 dimensional
+
+// To run it:
+// cargo run --example trilateration
+
+
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_prototype_lyon::prelude::*;
 use rand::Rng;
